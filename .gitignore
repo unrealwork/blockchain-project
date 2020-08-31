@@ -1,0 +1,8 @@
+# Project exclude paths
+/.gradle/
+/Problems/Print dates of a year with an offset/out/
+/Problems/Print dates of a year with an offset/out/production/classes/
+/Problems/Seconds between two time points/out/
+/Problems/Seconds between two time points/out/production/classes/
+/Problems/The first and the last day of a month/out/
+/Problems/The first and the last day of a month/out/production/classes/
