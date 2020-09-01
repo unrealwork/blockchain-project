@@ -1,0 +1,304 @@
+type: edu
+custom_name: stage2
+files:
+- name: src/blockchain/Main.java
+  visible: true
+  text: |
+    package blockchain;
+
+    public class Main {
+        public static void main(String[] args) {
+            System.out.println("Hello World!");
+        }
+    }
+  learner_created: false
+- name: test/BlockchainTest.java
+  visible: false
+  text: |
+    import blockchain.Main;
+    import org.hyperskill.hstest.stage.StageTest;
+    import org.hyperskill.hstest.testcase.CheckResult;
+    import org.hyperskill.hstest.testcase.TestCase;
+
+    import java.util.ArrayList;
+    import java.util.List;
+    import java.util.stream.Collectors;
+
+
+    class BlockParseException extends Exception {
+        BlockParseException(String msg) {
+            super(msg);
+        }
+    }
+
+
+    class Block {
+
+        int id;
+        long timestamp;
+        long magic;
+        String hashprev;
+        String hash;
+
+        static Block parseBlock(String strBlock) throws BlockParseException {
+            if (strBlock.length() == 0) {
+                return null;
+            }
+
+            if (!(strBlock.contains("Block:")
+                && strBlock.contains("Timestamp:"))) {
+
+                return null;
+            }
+
+            Block block = new Block();
+
+            List<String> lines = strBlock
+                .lines()
+                .map(String::strip)
+                .filter(e -> e.length() > 0)
+                .collect(Collectors.toList());
+
+            if (lines.size() != 9) {
+                throw new BlockParseException("Every block should " +
+                    "contain 9 lines of data");
+            }
+
+            if (!lines.get(0).equals("Block:")) {
+                throw new BlockParseException("First line of every block " +
+                    "should be \"Block:\"");
+            }
+
+            if (!lines.get(1).startsWith("Id:")) {
+                throw new BlockParseException("Second line of every block " +
+                    "should start with \"Id:\"");
+            }
+
+            String id = lines.get(1).split(":")[1]
+                .strip().replace("-", "");
+            boolean isNumeric = id.chars().allMatch(Character::isDigit);
+
+            if (!isNumeric) {
+                throw new BlockParseException("Id should be a number");
+            }
+
+            block.id = Integer.parseInt(id);
+
+
+
+            if (!lines.get(2).startsWith("Timestamp:")) {
+                throw new BlockParseException("Third line of every block " +
+                    "should start with \"Timestamp:\"");
+            }
+
+            String timestamp = lines.get(2).split(":")[1]
+                .strip().replace("-", "");
+            isNumeric = timestamp.chars().allMatch(Character::isDigit);
+
+            if (!isNumeric) {
+                throw new BlockParseException("Timestamp should be a number");
+            }
+
+            block.timestamp = Long.parseLong(timestamp);
+
+
+            if (!lines.get(3).startsWith("Magic number:")) {
+                throw new BlockParseException("4-th line of every block " +
+                    "should start with \"Magic number:\"");
+            }
+
+            String magic = lines.get(3).split(":")[1]
+                .strip().replace("-", "");
+            isNumeric = magic.chars().allMatch(Character::isDigit);
+
+            if (!isNumeric) {
+                throw new BlockParseException("Timestamp should be a number");
+            }
+
+            block.magic = Long.parseLong(magic);
+
+
+
+            if (!lines.get(4).equals("Hash of the previous block:")) {
+                throw new BlockParseException("5-th line of every block " +
+                    "should be \"Hash of the previous block:\"");
+            }
+
+            if (!lines.get(6).equals("Hash of the block:")) {
+                throw new BlockParseException("7-th line of every block " +
+                    "should be \"Hash of the block:\"");
+            }
+
+            String prevhash = lines.get(5).strip();
+            String hash = lines.get(7).strip();
+
+            if (!(prevhash.length() == 64 || prevhash.equals("0"))
+                || !(hash.length() == 64)) {
+
+                throw new BlockParseException("Hash length should " +
+                    "be equal to 64 except \"0\"");
+            }
+
+            block.hash = hash;
+            block.hashprev = prevhash;
+
+            return block;
+        }
+
+
+        static List<Block> parseBlocks(String output) throws BlockParseException {
+            String[] strBlocks = output.substring(
+                output.indexOf("Block:")).split("\n\n");
+
+            List<Block> blocks = new ArrayList<>();
+
+            for (String strBlock : strBlocks) {
+                Block block = parseBlock(strBlock.strip());
+                if (block != null) {
+                    blocks.add(block);
+                }
+            }
+
+            return blocks;
+        }
+    }
+
+    class Clue {
+        String zeros;
+        Clue(int n) {
+            zeros = "0".repeat(n);
+        }
+    }
+
+
+    public class BlockchainTest extends StageTest<Clue> {
+        public BlockchainTest() {
+            super(Main.class);
+        }
+
+        List<String> previousOutputs = new ArrayList<>();
+
+        @Override
+        public List<TestCase<Clue>> generate() {
+            return List.of(
+                new TestCase<Clue>().setInput("0").setAttach(new Clue(0)),
+                new TestCase<Clue>().setInput("1").setAttach(new Clue(1)),
+                new TestCase<Clue>().setInput("2").setAttach(new Clue(2)),
+                new TestCase<Clue>().setInput("0").setAttach(new Clue(0)),
+                new TestCase<Clue>().setInput("1").setAttach(new Clue(1)),
+                new TestCase<Clue>().setInput("2").setAttach(new Clue(2))
+            );
+        }
+
+        @Override
+        public CheckResult check(String reply, Clue clue) {
+
+            if (previousOutputs.contains(reply)) {
+                return new CheckResult(false,
+                    "You already printed this text in the previous tests");
+            }
+
+            previousOutputs.add(reply);
+
+            List<Block> blocks;
+            try {
+                blocks = Block.parseBlocks(reply);
+            } catch (BlockParseException ex) {
+                return new CheckResult(false, ex.getMessage());
+            } catch (Exception ex) {
+                return CheckResult.wrong("");
+            }
+
+            if (blocks.size() != 5) {
+                return new CheckResult(false,
+                    "You should output 5 blocks, found " + blocks.size());
+            }
+
+            for (int i = 1; i < blocks.size(); i++) {
+                Block curr = blocks.get(i - 1);
+                Block next = blocks.get(i);
+
+                if (curr.id + 1 != next.id) {
+                    return new CheckResult(false,
+                        "Id`s of blocks should increase by 1");
+                }
+
+                if (next.timestamp < curr.timestamp) {
+                    return new CheckResult(false,
+                        "Timestamp`s of blocks should increase");
+                }
+
+                if (!next.hashprev.equals(curr.hash)) {
+                    return new CheckResult(false, "Two hashes aren't equal, " +
+                        "but should");
+                }
+
+                if (!next.hash.startsWith(clue.zeros)) {
+                    return new CheckResult(false,
+                        "Hash should start with some zeros");
+                }
+            }
+
+
+            return CheckResult.correct();
+        }
+    }
+  learner_created: false
+- name: src/blockchain/BlockChain.java
+  visible: true
+  text: "package blockchain;\n\nimport org.jetbrains.annotations.NotNull;\n\nimport\
+    \ java.security.MessageDigest;\nimport java.security.NoSuchAlgorithmException;\n\
+    import java.util.Deque;\nimport java.util.Iterator;\nimport java.util.Spliterator;\n\
+    import java.util.UUID;\nimport java.util.concurrent.ConcurrentLinkedDeque;\nimport\
+    \ java.util.concurrent.locks.Lock;\nimport java.util.concurrent.locks.ReentrantLock;\n\
+    import java.util.function.Consumer;\n\nimport static java.nio.charset.StandardCharsets.UTF_8;\n\
+    \npublic class BlockChain implements Iterable<BlockChain.Block> {\n    private\
+    \ final Lock lock = new ReentrantLock();\n    private final Deque<Block> blocks;\n\
+    \n    private BlockChain() {\n        this.blocks = new ConcurrentLinkedDeque<>();\n\
+    \    }\n\n    public static BlockChain getInstance() {\n        return new BlockChain();\n\
+    \    }\n\n    public Block mine() {\n        lock.lock();\n        try {\n   \
+    \         final BlockChain.Block block = blocks.isEmpty() ? Block.first() : blocks.peekLast().next();\n\
+    \            blocks.add(block);\n            return block;\n        } finally\
+    \ {\n            lock.unlock();\n        }\n    }\n\n    @NotNull\n    @Override\n\
+    \    public Iterator<Block> iterator() {\n        return blocks.iterator();\n\
+    \    }\n\n    @Override\n    public void forEach(Consumer<? super Block> action)\
+    \ {\n        blocks.forEach(action);\n    }\n\n    @Override\n    public Spliterator<BlockChain.Block>\
+    \ spliterator() {\n        return blocks.spliterator();\n    }\n\n    public static\
+    \ BlockChain withSize(final int size) {\n        final BlockChain chain = new\
+    \ BlockChain();\n        for (int i = 0; i < size; i++) {\n            chain.mine();\n\
+    \        }\n        return chain;\n    }\n\n    public static class Block {\n\
+    \        private static final MessageDigest DIGEST = SHA256Digest();\n       \
+    \ private final long id;\n        private final long ts;\n        private final\
+    \ String previousHashBlock;\n        private final String hash;\n\n        public\
+    \ long getId() {\n            return id;\n        }\n\n        public long getTs()\
+    \ {\n            return ts;\n        }\n\n        public String getPreviousHashBlock()\
+    \ {\n            return previousHashBlock;\n        }\n\n        public String\
+    \ getHash() {\n            return hash;\n        }\n\n        public Block(long\
+    \ id, long ts, String previousHashBlock, String hash) {\n            this.id =\
+    \ id;\n            this.ts = ts;\n            this.previousHashBlock = previousHashBlock;\n\
+    \            this.hash = hash;\n        }\n\n        private static BlockChain.Block\
+    \ first() {\n            return new BlockChain.Block(1, System.currentTimeMillis(),\
+    \ \"0\", applySha256(UUID.randomUUID().toString()));\n        }\n\n        private\
+    \ BlockChain.Block next() {\n            return new BlockChain.Block(id + 1, System.currentTimeMillis(),\
+    \ this.hash, applySha256(hash + (id + 1)));\n        }\n\n        @Override\n\
+    \        public String toString() {\n            return String.format(\"%nBlock:%nId:\
+    \ %d%nTimestamp: %d%n\" +\n                            \"Hash of the previous\
+    \ block: %n%s%n\" +\n                            \"Hash of the block: %n%s\",\n\
+    \                    id, ts, previousHashBlock, hash\n            );\n       \
+    \ }\n\n        public static String applySha256(String input) {\n            try\
+    \ {\n                /* Applies sha256 to our input */\n                byte[]\
+    \ hash = DIGEST.digest(input.getBytes(UTF_8));\n                StringBuilder\
+    \ hexString = new StringBuilder();\n                for (byte elem : hash) {\n\
+    \                    String hex = Integer.toHexString(0xff & elem);\n        \
+    \            if (hex.length() == 1) {\n                        hexString.append('0');\n\
+    \                    }\n                    hexString.append(hex);\n         \
+    \       }\n                return hexString.toString();\n            } catch (Exception\
+    \ e) {\n                throw new IllegalStateException(e);\n            }\n \
+    \       }\n    }\n\n\n    public static MessageDigest SHA256Digest() {\n     \
+    \   try {\n            return MessageDigest.getInstance(\"SHA-256\");\n      \
+    \  } catch (NoSuchAlgorithmException e) {\n            throw new IllegalStateException(e);\n\
+    \        }\n    }\n    \n}\n"
+  learner_created: true
+feedback_link: https://hyperskill.org/projects/50/stages/272/implement
+status: Unchecked
+record: -1
