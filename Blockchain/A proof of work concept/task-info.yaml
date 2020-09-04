@@ -300,5 +300,15 @@ files:
     \        }\n    }\n    \n}\n"
   learner_created: true
 feedback_link: https://hyperskill.org/projects/50/stages/272/implement
-status: Unchecked
+status: Failed
+feedback:
+  message: |-
+    Wrong answer in test #1
+
+    Please find below the output of your program during this failed test.
+
+    ---
+
+    d
+  time: Thu, 03 Sep 2020 04:53:39 UTC
 record: -1

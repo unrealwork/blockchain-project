@@ -49,3 +49,23 @@ P
 .Blockchain/task/src/blockchain/BlockChain.java,4/1/4138c969827a62dcb6b175366b3fc2ac0de52a19
 X
 (Blockchain/task/src/blockchain/Main.java,8/5/854a1cff082e26484c959eacd3139d8cfe90431d
+O
+Problems/Bus tour/src/Main.java,e/c/ec1f462cc8c865a6b2597a43641c65e43370c8f2
+]
+-Problems/IntBinaryOperation (1)/src/Main.java,b/9/b97a12c7e3840f54ef96bec6f290c17bf0a288c8
+Y
+)Problems/Users and WebSites/src/Main.java,c/8/c8fa9e4b498135ab35d9837907aa4780fa467a4d
+V
+&Problems/Shape hierarchy/src/Main.java,4/a/4ac97177864c3bff908b17ac260f1187765248dc
+U
+%Problems/Laptop factory/src/Main.java,f/b/fb8704a530692ac92fd7a2801c235252cd6af4f4
+N
+Problems/Burgers/src/Main.java,b/3/b3a630ceafebe0868d1631aa342cba88cac423bc
+T
+$Problems/Phone factory/src/Main.java,1/a/1a1743e34999eb747ca4f72d7461de1272dd19ac
+\
+,Problems/Convert to byte array/src/Main.java,4/2/42202e3f9a80225aed960c3d04ab686cdbc789a1
+X
+(Problems/Serializable user/src/Main.java,2/a/2a0c267ec4133eecee4c61673c6d1fcb127b9eec
+V
+&Problems/The Range class/src/Main.java,c/e/cee036d708d9e6ae58f64813aad955a2d967e982

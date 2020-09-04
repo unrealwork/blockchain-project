@@ -1,0 +1,7 @@
+
+‰
+java:S1130"lRemove the declaration of thrown exception 'java.io.IOException', as it cannot be thrown from method's body.(¥‘…8’ÃÎÄ.
+L
+java:S1481"/Remove this unused "sampleFile" local variable.(Üö€Á8’ÃÎÄ.
+\
+java:S1118":Add a private constructor to hide the implicit public one.(Áş°üÿÿÿÿ8·ğŸÎÄ.
